@@ -22,7 +22,7 @@ impl<'a> CommandFS<'a> {
     }
     pub async fn write_data(&mut self, data: Vec<u8>, to_file: &'a str) {
         if self.file_dir.is_dir() {
-            match fs::write(format!("{}{to_file}", self.whereami()), data).await {
+            match fs::write(format!("{}/{to_file}", self.whereami()), data).await {
                 Ok(_) => {}
                 Err(error) => self.err_msg = error.to_string(),
             }
