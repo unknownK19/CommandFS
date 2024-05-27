@@ -6,6 +6,6 @@ async fn main() {
     new_command
         .write_data(b"Hello World".to_vec(), "Metadata.txt")
         .await;
-    new_command.step_back();
+    // new_command.step_back();
     println!("{}", new_command.err_msg)
 }
