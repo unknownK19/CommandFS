@@ -1,13 +1,10 @@
 use super::file_handel::CommandFS;
-use super::file_handel::OperatingSystem;
 use std::path::Path;
 use tokio::fs;
 
 impl<'a> CommandFS<'a> {
-    #[cfg(target_os = "linux")]
     pub fn new(dir: &'a str) -> Self {
         Self {
-            os: OperatingSystem::Linux,
             file_dir: Path::new(dir),
             // sample_dir: None,
             err_msg: "".to_string(),
