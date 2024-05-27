@@ -1,0 +1,12 @@
+[package]
+name = "commandfs"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+homedir = "0.2.1"
+tokio = { version = "1.37.0", features = ["full"] }
+
+[lib]
+name="command_fs"
+path = "src/lib/lib.rs"
