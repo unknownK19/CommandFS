@@ -2,7 +2,7 @@ use super::file_handel::CommandFS;
 
 impl<'a> CommandFS<'a> {
     pub fn whereami(&mut self) -> &str {
-        match self.file_dir.to_str() {
+        match self.dir.to_str() {
             Some(path) => path,
             None => {
                 self.err_msg = "Unable to know Path".to_string();
@@ -29,56 +29,50 @@ impl<'a> CommandFS<'a> {
         }
     }
     pub fn dir_list(&mut self) -> Vec<String> {
-        if !self.file_dir.is_dir() {
-            self.err_msg = String::from(
-                "!WARNING! Seems like Given path is file please set path to Directory on given",
-            );
-            vec![]
-        } else {
-            match self.file_dir.read_dir() {
-                Ok(read_dir) => {
-                    let mut output = vec![];
-                    for dir in read_dir {
-                        match dir {
-                            Ok(dir_entry) => {
-                                if dir_entry.path().is_dir() {
-                                    let len_path = match self.file_dir.to_str() {
-                                        Some(str) => str.len(),
-                                        None => 0,
-                                    };
-                                    output.push(
-                                        dir_entry.path().display().to_string().as_str()[len_path..]
-                                            .to_string(),
-                                    )
-                                }
+        match self.dir.read_dir() {
+            Ok(read_dir) => {
+                let mut output = vec![];
+                for dir in read_dir {
+                    match dir {
+                        Ok(dir_entry) => {
+                            if dir_entry.path().is_dir() {
+                                let len_path = match self.dir.to_str() {
+                                    Some(str) => str.len(),
+                                    None => 0,
+                                };
+                                output.push(
+                                    dir_entry.path().display().to_string().as_str()[len_path..]
+                                        .to_string(),
+                                )
                             }
-                            Err(error) => self.err_msg = error.to_string(),
                         }
+                        Err(error) => self.err_msg = error.to_string(),
                     }
-                    return output;
                 }
-                Err(error) => {
-                    self.err_msg = error.to_string();
-                    vec![]
-                }
+                return output;
+            }
+            Err(error) => {
+                self.err_msg = error.to_string();
+                vec![]
             }
         }
     }
+
     pub fn file_list(&mut self) -> Vec<String> {
-        if !self.file_dir.is_dir() {
+        if !self.dir.is_dir() {
             self.err_msg = String::from(
                 "!WARNING! Seems like Given path is file please set path to Directory on given",
             );
             vec![]
         } else {
-            match self.file_dir.read_dir() {
+            match self.dir.read_dir() {
                 Ok(read_dir) => {
                     let mut output = vec![];
                     for dir in read_dir {
                         match dir {
                             Ok(dir_entry) => {
                                 if !dir_entry.path().is_dir() {
-                                    let len_path = match self.file_dir.to_str() {
+                                    let len_path = match self.dir.to_str() {
                                         Some(str) => str.len(),
                                         None => 0,
                                     };
@@ -101,19 +95,19 @@ impl<'a> CommandFS<'a> {
         }
     }
     pub fn file_dir_list(&mut self) -> Vec<String> {
-        if !self.file_dir.is_dir() {
+        if !self.dir.is_dir() {
             self.err_msg = String::from(
                 "!WARNING! Seems like Given path is file please set path to Directory on given",
             );
             vec![]
         } else {
-            match self.file_dir.read_dir() {
+            match self.dir.read_dir() {
                 Ok(read_dir) => {
                     let mut output = vec![];
                     for dir in read_dir {
                         match dir {
                             Ok(dir_entry) => {
-                                let len_path = match self.file_dir.to_str() {
+                                let len_path = match self.dir.to_str() {
                                     Some(str) => str.len(),
                                     None => 0,
                                 };
