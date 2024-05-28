@@ -1,5 +1,9 @@
 use super::file_handel::CommandFS;
-use std::path::Path;
+use std::{
+    borrow::BorrowMut,
+    ops::{AddAssign, ShlAssign, ShrAssign},
+    path::Path,
+};
 use tokio::fs;
 
 impl<'a> CommandFS<'a> {
@@ -83,5 +87,47 @@ impl<'a> CommandFS<'a> {
         } else {
             self.change_dir(Box::leak(Box::new(updated_path)))
         }
+    }
+
+    fn write_data_sync(&mut self, data: Vec<u8>, to_file: &'a str) {
+        if self.dir.is_dir() {
+            match std::fs::write(format!("{}/{to_file}", self.whereami()), data) {
+                Ok(_) => {}
+                Err(error) => self.err_msg = error.to_string(),
+            }
+        } else {
+            self.err_msg = String::from(
+                "!WARNING! Seems like Given path is file please set path to Directory on given",
+            );
+        }
+    }
+}
+
+impl<'a> AddAssign<(&'a str, &[u8])> for CommandFS<'a> {
+    fn add_assign(&mut self, rhs: (&'a str, &[u8])) {
+        self.write_data_sync(rhs.1.to_vec(), rhs.0);
+    }
+}
+
+impl<'a> ShrAssign<&str> for CommandFS<'a> {
+    fn shr_assign(&mut self, rhs: &str) {
+        let updated_dir = self.whereami().to_owned() + rhs;
+        self.borrow_mut()
+            .change_dir(Box::leak(Box::new(updated_dir)));
+    }
+}
+
+/*
+TODO: Delete Method and Async Delete Method
+impl<'a> SubAssign<&str> for CommandFS<'a> {
+    fn sub_assign(&mut self, rhs: &str) {
+        self.step_back(rhs)
+    }
+}
+*/
+
+impl<'a> ShlAssign<usize> for CommandFS<'a> {
+    fn shl_assign(&mut self, rhs: usize) {
+        self.step_back(rhs);
     }
 }
