@@ -1,7 +1,7 @@
 use super::file_handel::CommandFS;
 use std::{
     borrow::BorrowMut,
-    ops::{AddAssign, ShlAssign, ShrAssign},
+    ops::{AddAssign, ShlAssign, Shr, ShrAssign, SubAssign},
     path::Path,
 };
 use tokio::fs;
@@ -25,15 +25,15 @@ impl<'a> CommandFS<'a> {
     }
     // Because it require some time to load large data
     /**
-    *# Example
+    # Example
     ```rust
     let mut new_command = CommandFS::new("/");
     new_command.read_data
     ```
-    *
-    * */
+
+     */
     pub async fn read_data(&mut self, from_file: &str) -> Vec<u8> {
-        match fs::read(self.whereami().to_owned() + from_file).await {
+        match fs::read(self.whereami().to_owned() + "/" + from_file).await {
             Ok(file) => file,
             Err(error) => {
                 self.err_msg = error.to_string();
@@ -101,6 +101,43 @@ impl<'a> CommandFS<'a> {
             );
         }
     }
+    pub async fn remove(&mut self, file: &str) {
+        let target_path = self.whereami().to_owned() + "/" + file;
+        if Path::new(target_path.as_str()).is_dir() {
+            match fs::remove_dir(target_path.as_str()).await {
+                Ok(_) => {}
+                Err(error) => self.err_msg = error.to_string(),
+            }
+        } else {
+            match fs::remove_file(target_path.as_str()).await {
+                Ok(_) => {}
+                Err(error) => self.err_msg = error.to_string(),
+            }
+        }
+    }
+    fn remove_sync(&mut self, path: &str) {
+        let target_path = self.whereami().to_owned() + path;
+        if Path::new(target_path.as_str()).is_dir() {
+            match std::fs::remove_dir(target_path.as_str()) {
+                Ok(_) => {}
+                Err(error) => self.err_msg = error.to_string(),
+            }
+        } else {
+            match std::fs::remove_file(target_path.as_str()) {
+                Ok(_) => {}
+                Err(error) => self.err_msg = error.to_string(),
+            }
+        }
+    }
+    fn read_data_sync(&mut self, from_file: &str) -> Vec<u8> {
+        match std::fs::read(self.whereami().to_owned() + "/" + from_file) {
+            Ok(file) => file,
+            Err(error) => {
+                self.err_msg = error.to_string();
+                vec![]
+            }
+        }
+    }
 }
 
 impl<'a> AddAssign<(&'a str, &[u8])> for CommandFS<'a> {
@@ -117,17 +154,21 @@ impl<'a> ShrAssign<&str> for CommandFS<'a> {
     }
 }
 
-/*
-TODO: Delete Method and Async Delete Method
 impl<'a> SubAssign<&str> for CommandFS<'a> {
     fn sub_assign(&mut self, rhs: &str) {
-        self.step_back(rhs)
+        self.remove_sync(rhs)
     }
 }
-*/
 
 impl<'a> ShlAssign<usize> for CommandFS<'a> {
     fn shl_assign(&mut self, rhs: usize) {
         self.step_back(rhs);
+    }
+}
+
+impl<'a> Shr<&str> for &mut CommandFS<'a> {
+    type Output = Vec<u8>;
+    fn shr(self, rhs: &str) -> Self::Output {
+        (&mut self.read_data_sync(rhs)).clone()
     }
 }
