@@ -2,11 +2,18 @@
 name = "commandfs"
 version = "0.1.0"
 edition = "2021"
+authors = ["Anurag"]
+description = "Panicless File operation API"
+repository = "https://github.com/unknownK19/CommandFS"
+categories = ["fs", "panicless"]
+license = "MIT"
+license-file = "LICENSE"
+
 
 [dependencies]
 homedir = "0.2.1"
 tokio = { version = "1.37.0", features = ["full"] }
 
 [lib]
-name="command_fs"
+name = "command_fs"
 path = "src/lib/lib.rs"

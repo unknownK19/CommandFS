@@ -13,13 +13,16 @@ impl<'a> CommandFS<'a> {
     pub fn know_home_dir(&mut self) -> String {
         match homedir::get_my_home() {
             Ok(home_option) => match home_option {
-                Some(home) => match home.to_str() {
-                    Some(x) => x.to_owned(),
-                    None => "".to_string(),
-                },
+                Some(home) => {
+                    let home_bind = home.clone();
+                    match home_bind.to_str() {
+                        Some(x) => x.to_string(),
+                        None => "".to_string(),
+                    }
+                }
                 None => {
                     self.err_msg = "Somethings Wrong".to_string();
-                    "".to_owned()
+                    "".to_string()
                 }
             },
             Err(error) => {

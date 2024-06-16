@@ -10,9 +10,8 @@ impl<'a> CommandFS<'a> {
     /**
     # Example
     ```rust
-    let mut new_command = CommandFS::new("/");
+    let mut command = CommandFS::new("/");
     ```
-
       It will create CommandFS struct which contain two Field. file_dir (File or Directory),
       err_msg (For Safety every error message is store in err_msg field)
      */
@@ -27,10 +26,10 @@ impl<'a> CommandFS<'a> {
     /**
     # Example
     ```rust
-    let mut new_command = CommandFS::new("/");
-    new_command.read_data
+    let mut command = CommandFS::new("/home/username"); // For Unix System
+    command.read_data(".bashrc"); // If you see Empty it means file Doesn't exist or something.
+    println!("{}", command.err_msg); // It'll print error message without any panic
     ```
-
      */
     pub async fn read_data(&mut self, from_file: &str) -> Vec<u8> {
         match fs::read(self.whereami().to_owned() + "/" + from_file).await {
@@ -41,6 +40,13 @@ impl<'a> CommandFS<'a> {
             }
         }
     }
+    /**
+     # Example
+     ```rust
+    let mut command = CommandFS::new("/home/username"); // For Unix System
+    command.read_data(".bashrc"); // If you see Empty it means file Doesn't exist or something.
+     ```
+    */
     pub async fn write_data(&mut self, data: Vec<u8>, to_file: &'a str) {
         if self.dir.is_dir() {
             match fs::write(format!("{}/{to_file}", self.whereami()), data).await {
@@ -136,6 +142,31 @@ impl<'a> CommandFS<'a> {
                 self.err_msg = error.to_string();
                 vec![]
             }
+        }
+    }
+    pub fn rename(&mut self, from_file: &str, rename: &str) {
+        let mut count = 0;
+        let mut file_found = false;
+        while self.file_list().len() != count - 1 {
+            if self.file_list()[count] != from_file.to_string() {
+                count += 1;
+            } else {
+                match std::fs::rename(
+                    self.whereami().to_owned() + "/" + from_file,
+                    self.whereami().to_owned() + "/" + rename,
+                ) {
+                    Ok(_) => {}
+                    Err(error) => self.err_msg = error.to_string(),
+                };
+                file_found = true;
+                break;
+            }
+        }
+        if !file_found {
+            self.err_msg = format!(
+                "!NOT FOUND! from the currrent path, {} file is not available",
+                from_file
+            )
         }
     }
 }
