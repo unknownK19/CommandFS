@@ -44,7 +44,7 @@ impl<'a> CommandFS<'a> {
      # Example
      ```rust
     let mut command = CommandFS::new("/home/username"); // For Unix System
-    command.read_data(".bashrc"); // If you see Empty it means file Doesn't exist or something.
+    command.read_data(".bashrc").await; // If you see Empty it means file Doesn't exist or something.
      ```
     */
     pub async fn write_data(&mut self, data: Vec<u8>, to_file: &'a str) {
@@ -144,6 +144,12 @@ impl<'a> CommandFS<'a> {
             }
         }
     }
+    fn create_dir(&mut self, dir_name: &'a str) {
+        match std::fs::create_dir(format!("{}/{dir_name}", self.whereami())) {
+            Ok(_) => {}
+            Err(error) => self.err_msg = error.to_string(),
+        }
+    }
     pub fn rename(&mut self, from_file: &str, rename: &str) {
         let mut count = 0;
         let mut file_found = false;
@@ -171,9 +177,31 @@ impl<'a> CommandFS<'a> {
     }
 }
 
-impl<'a> AddAssign<(&'a str, &[u8])> for CommandFS<'a> {
-    fn add_assign(&mut self, rhs: (&'a str, &[u8])) {
+/**
+# Example
+    ```rust
+let mut command = CommandFS::new("/home/username");
+command += ("myfile.txt", b"Blah Blah Blah Blah");
+    ```
+      It will create Create and Write File for non sync task,
+*/
+impl<'a, const N: usize> AddAssign<(&'a str, &[u8; N])> for CommandFS<'a> {
+    fn add_assign(&mut self, rhs: (&'a str, &[u8; N])) {
         self.write_data_sync(rhs.1.to_vec(), rhs.0);
+    }
+}
+
+/**
+# Example
+    ```rust
+let mut command = CommandFS::new("/home/username");
+command += ("mydirectory");
+    ```
+      It will create Directory,
+*/
+impl<'a> AddAssign<&'a str> for CommandFS<'a> {
+    fn add_assign(&mut self, rhs: &'a str) {
+        self.create_dir(rhs)
     }
 }
 

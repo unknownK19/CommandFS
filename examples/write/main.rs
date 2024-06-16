@@ -18,6 +18,8 @@ async fn main() {
     // Method 2 For Sync
     let mut command = CommandFS::new("/");
     command >>= home_dir.as_str();
+    command += "mydir";
+    command >>= "mydir";
     command += ("metadata.txt", b"It's January Now");
     println!(
         "{}",
