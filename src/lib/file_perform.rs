@@ -8,7 +8,6 @@ use tokio::fs;
 
 impl<'a> CommandFS<'a> {
     /**
-    # Example
     ```rust
     let mut command = CommandFS::new("/");
     ```
@@ -24,7 +23,6 @@ impl<'a> CommandFS<'a> {
     }
     // Because it require some time to load large data
     /**
-    # Example
     ```rust
     let mut command = CommandFS::new("/home/username"); // For Unix System
     command.read_data(".bashrc"); // If you see Empty it means file Doesn't exist or something.
@@ -41,7 +39,6 @@ impl<'a> CommandFS<'a> {
         }
     }
     /**
-     # Example
      ```rust
     let mut command = CommandFS::new("/home/username"); // For Unix System
     command.read_data(".bashrc").await; // If you see Empty it means file Doesn't exist or something.
@@ -178,12 +175,11 @@ impl<'a> CommandFS<'a> {
 }
 
 /**
-# Example
     ```rust
 let mut command = CommandFS::new("/home/username");
 command += ("myfile.txt", b"Blah Blah Blah Blah");
-    ```
-      It will create Create and Write File for non sync task,
+```
+      It will create Create and Write File for non sync task for known Size.
 */
 impl<'a, const N: usize> AddAssign<(&'a str, &[u8; N])> for CommandFS<'a> {
     fn add_assign(&mut self, rhs: (&'a str, &[u8; N])) {
@@ -192,7 +188,19 @@ impl<'a, const N: usize> AddAssign<(&'a str, &[u8; N])> for CommandFS<'a> {
 }
 
 /**
-# Example
+    ```rust
+let mut command = CommandFS::new("/home/username");
+command += ("myfile.txt", vec![66, 108, 97, 104,32,66, 108, 97, 104,32,66, 108, 97, 104,32,66, 108, 97, 104,32].as_bytes());
+```
+      It will create Create and Write File for non sync task but different is unknown Size.
+*/
+impl<'a> AddAssign<(&'a str, &[u8])> for CommandFS<'a> {
+    fn add_assign(&mut self, rhs: (&'a str, &[u8])) {
+        self.write_data_sync(rhs.1.to_vec(), rhs.0);
+    }
+}
+
+/**
     ```rust
 let mut command = CommandFS::new("/home/username");
 command += ("mydirectory");
